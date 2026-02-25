@@ -31,7 +31,7 @@ if [[ "$(cat /proc/1/comm 2>/dev/null)" != "bwrap" ]] && [[ "$$" != "2" ]]; then
   # Ask for confirmation
   echo "Project directory: $PROJECT"
   echo -n "Allow Claude to access this directory? [y/N] "
-  read -r response
+  read -n 1 -r response && echo
   if [[ ! "$response" =~ ^[Yy]$ ]]; then
     echo "Aborted."
     exit 0
