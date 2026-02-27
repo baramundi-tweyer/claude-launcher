@@ -32,8 +32,8 @@ export PATH="$HOME/.local/bin:$PATH"
 ## Usage
 
 ```bash
-claude                    # Launch in current directory
-claude /path/to/project   # Launch in specific project
+claude            # Launch in current directory
+claude mcp list   # List installed MCP servers
 ```
 
 ## Comparison

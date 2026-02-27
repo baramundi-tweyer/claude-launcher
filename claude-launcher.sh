@@ -11,7 +11,7 @@ GCS="https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59
 # Detect if we're inside bwrap by checking if PID 1 is bwrap
 if [[ "$(cat /proc/1/comm 2>/dev/null)" != "bwrap" ]] && [[ "$$" != "2" ]]; then
   # Determine project directory
-  PROJECT="$(realpath "${1:-.}")"
+  PROJECT="$(realpath .)"
 
   # Check if project is in allowed locations
   allowed=false
@@ -105,5 +105,5 @@ if [[ "$needs_update" == "true" ]]; then
   chmod +x "$CLAUDE_BIN"
 fi
 
-# Launch claude with remaining arguments (skip first arg which was project dir)
-exec "$CLAUDE_BIN" "${@:2}"
+# Launch claude with arguments
+exec "$CLAUDE_BIN" "$@"
