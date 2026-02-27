@@ -109,5 +109,8 @@ fi
 mkdir -p "$HOME/.local/bin"
 export PATH="$HOME/.local/bin:$PATH"
 
+# Fix claude /doctor Warning: Running native installation but config install method is 'unknown'
+[[ -f "$HOME/.claude.json" ]] || echo '{"installMethod":"native"}' > "$HOME/.claude.json"
+
 # Launch claude with arguments
 exec "$CLAUDE_BIN" "$@"
