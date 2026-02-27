@@ -75,8 +75,8 @@ if [[ "$(cat /proc/1/comm 2>/dev/null)" != "bwrap" ]] && [[ "$$" != "2" ]]; then
     --setenv CLAUDE_CODE_DISABLE_AUTOUPDATE 1 \
     --setenv CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC 1 \
     --chdir "$PROJECT" \
-    --ro-bind "$0" "$0" \
-    -- "$0" "$@"
+    --ro-bind "$0" /entrypoint \
+    -- /entrypoint "$@"
 fi
 
 # ====== Everything below runs inside bwrap ======
@@ -104,6 +104,10 @@ if [[ "$needs_update" == "true" ]]; then
   curl -fsSL -o "$CLAUDE_BIN" "$GCS/$remote_ver/linux-x64/claude"
   chmod +x "$CLAUDE_BIN"
 fi
+
+# Fix some MCP servers and make claude /doctor happy
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
 
 # Launch claude with arguments
 exec "$CLAUDE_BIN" "$@"
