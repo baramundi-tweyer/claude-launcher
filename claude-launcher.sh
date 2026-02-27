@@ -76,7 +76,7 @@ if [[ "$(cat /proc/1/comm 2>/dev/null)" != "bwrap" ]] && [[ "$$" != "2" ]]; then
     --setenv CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC 1 \
     --chdir "$PROJECT" \
     --ro-bind "$0" "$0" \
-    -- bash "$0" "$@"
+    -- "$0" "$@"
 fi
 
 # ====== Everything below runs inside bwrap ======
