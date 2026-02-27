@@ -3,10 +3,7 @@
 set -euo pipefail
 
 ALLOWED_PATHS=("$HOME/source/")
-
 SANDBOX="$HOME/.claude-sandbox"
-CLAUDE_BIN="$SANDBOX/claude"
-GCS="https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases"
 
 # Detect if we're inside bwrap by checking if PID 1 is bwrap
 if [[ "$(cat /proc/1/comm 2>/dev/null)" != "bwrap" ]] && [[ "$$" != "2" ]]; then
@@ -67,12 +64,10 @@ if [[ "$(cat /proc/1/comm 2>/dev/null)" != "bwrap" ]] && [[ "$$" != "2" ]]; then
     --tmpfs /run \
     "${BINDS[@]}" \
     --bind "$SANDBOX/home" "$HOME" \
-    --bind "$SANDBOX" "$SANDBOX" \
     --bind "$PROJECT" "$PROJECT" \
     --ro-bind "$MANAGED_SETTINGS" /etc/claude-code/managed-settings.json \
     --setenv HOME "$HOME" \
     --setenv TERM "${TERM:-xterm-256color}" \
-    --setenv CLAUDE_CODE_DISABLE_AUTOUPDATE 1 \
     --setenv CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC 1 \
     --chdir "$PROJECT" \
     --ro-bind "$0" /entrypoint \
@@ -82,6 +77,16 @@ fi
 # ====== Everything below runs inside bwrap ======
 
 echo "Inside sandbox. Checking for updates..."
+
+# Fix some MCP servers and make claude /doctor happy
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+
+# Suppress claude /doctor Warning: Running native installation but config install method is 'unknown'
+[[ -f "$HOME/.claude.json" ]] || echo '{"installMethod":"native"}' > "$HOME/.claude.json"
+
+GCS="https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases"
+CLAUDE_BIN="$HOME/.local/bin/claude"
 
 remote_ver="$(curl -fsSL "$GCS/latest")"
 echo "Latest: $remote_ver"
@@ -104,13 +109,6 @@ if [[ "$needs_update" == "true" ]]; then
   curl -fsSL -o "$CLAUDE_BIN" "$GCS/$remote_ver/linux-x64/claude"
   chmod +x "$CLAUDE_BIN"
 fi
-
-# Fix some MCP servers and make claude /doctor happy
-mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
-
-# Fix claude /doctor Warning: Running native installation but config install method is 'unknown'
-[[ -f "$HOME/.claude.json" ]] || echo '{"installMethod":"native"}' > "$HOME/.claude.json"
 
 # Launch claude with arguments
 exec "$CLAUDE_BIN" "$@"
